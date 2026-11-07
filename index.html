@@ -52,6 +52,27 @@ legend label{margin:0;gap:8px}
 .pc .ac{display:flex;gap:6px;padding:6px 8px 10px}.pc .ac button{flex:1;padding:6px 0}
 .np{border:2px dashed var(--line);background:none;border-radius:16px;min-height:200px;color:var(--ac);font-weight:600;font-size:15px}
 #pdi{width:100%;margin:10px 0;background:var(--card);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:8px;font:inherit;user-select:text}
+#sheet{display:none}
+#drawer{position:fixed;left:0;top:57px;bottom:0;width:min(86vw,300px);z-index:30;background:var(--panel);border-right:1px solid var(--line);transform:translateX(-104%);transition:transform .25s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;box-shadow:8px 0 30px rgba(0,0,0,.3)}
+#drawer.on{transform:none}
+#drawer .dh{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}
+#drawer #layers{display:block;height:auto;flex:1;overflow:auto;padding:10px}
+.gr{touch-action:none;cursor:grab;color:var(--mut);padding:6px 4px;user-select:none}
+.row.drag{opacity:.45}.row.over{outline:2px solid var(--ac)}.row button{padding:5px 7px;font-size:13px}
+#dock{background:var(--panel);border-top:1px solid var(--line);border-radius:18px 18px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.18);position:relative;z-index:10}
+#tsheet{display:none;border-bottom:1px solid var(--line)}
+#tsheet.on{display:block;animation:up .18s ease}
+@keyframes up{from{transform:translateY(14px);opacity:0}}
+.sh{display:flex;justify-content:space-between;align-items:center;padding:10px 14px 0}
+#tbody{max-height:40dvh;overflow:auto;padding:4px 14px 14px}
+#tbody #style,#tbody #canvas{display:block;height:auto;overflow:visible;padding:0}
+#tbar{display:flex;gap:4px;overflow-x:auto;padding:8px 10px;scrollbar-width:none}
+#tbar::-webkit-scrollbar{display:none}
+.chip{flex:none;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:64px;padding:8px 6px;background:none;border:0;color:var(--mut);font-size:11px;border-radius:12px}
+.chip i{font-style:normal;font-size:19px;line-height:1;color:var(--tx)}
+.chip.on{background:rgba(139,123,255,.16);color:var(--ac)}.chip.on i{color:var(--ac)}
+button.pri{background:linear-gradient(135deg,#7c5cff,#b05cff)}
+@media(min-width:900px){body.dr #stage{margin-left:300px}}
 .al{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:6px}.al button{padding:9px 0;font-size:16px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .row{display:flex;align-items:center;gap:6px;padding:6px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--card)}
@@ -66,15 +87,18 @@ a.dl{display:block;text-align:center;text-decoration:none;color:#fff;background:
 </head>
 <body>
 <header>
+<button id="lyb" aria-label="Layers">☰</button>
 <button id="hm" aria-label="Projects">⌂</button>
 <b><span id="pn">Glow Studio</span> <small id="sv" class="mut"></small></b>
-<button id="snap" class="tg on" aria-pressed="true" aria-label="Toggle snap guides">⌖ Snap</button>
+<button id="snap" class="tg on" aria-pressed="true" aria-label="Toggle snap guides">⌖</button>
 <button id="rz" aria-label="Reset view">⤢</button>
 <button id="undo" disabled aria-label="Undo">↶</button>
 <button id="redo" disabled aria-label="Redo">↷</button>
 <button class="pri" id="exp">Export</button>
 </header>
 <main id="stage"><canvas id="c"></canvas></main>
+<aside id="drawer"><div class="dh"><b>Layers</b><button id="dx" aria-label="Close layers">✕</button></div></aside>
+<section id="dock"><div id="tsheet"><div class="sh"><b id="stt"></b><button id="stx" aria-label="Close">✕</button></div><div id="tbody"></div></div><div id="tbar"></div></section>
 <section id="sheet">
 <nav id="tabs"><button data-t="add" class="on">Add</button><button data-t="layers">Layers</button><button data-t="style">Style</button><button data-t="canvas">Canvas</button></nav>
 <div class="pn on" id="add">
@@ -114,7 +138,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const hex=c=>/^#[0-9a-f]{6}$/i.test(c)?c:'#ffffff';
 const FONTS5=['Instrument Serif','DM Serif Display','Bodoni Moda','Cormorant Garamond','Fragment Mono'];const FONTS=[...FONTS5,'Poppins','Bebas Neue','Pacifico','Playfair Display','Anton','Lobster','Orbitron','Permanent Marker','Dancing Script','Monoton'];
-const FX0={lblur:{on:false,mode:'Normal',amt:8,dist:40,angle:0,inten:70,dir:'Both',q:16,size:60,soft:60,str:60,erase:false},filt:{on:false,bri:100,con:100,sat:100,hue:0,sep:0,gray:0},fill:{none:false},bg:{tol:30,feather:2,conn:true},curve:{on:false,style:'Arc',amt:40,freq:2,rot:false},warp:{on:false,type:'Bulge',amt:60,x:0,y:0,size:60},chrome:{on:false,pal:'Silver',color:'#ff7a3d',depth:14,bump:1,bands:2,contrast:1,shine:.6,angle:0},outline:{on:false,color:'#000000',width:8},grad:{on:false,c1:'#ff8a00',c2:'#e52e71',angle:90,base:''},shadow:{on:false,color:'#000000',blur:12,x:10,y:10},glow:{on:false,color:'#00e5ff',size:30,power:2},blur:{on:false,mode:'Normal',amt:4,dist:40,angle:0,inten:70,keep:0,dir:'Both',q:16},grain:{on:false,amt:50}};
+const FX0={persp:{on:false,mode:'Tilt',pin:[0,0,0,0,0,0,0,0],rx:25,ry:0,rz:0,str:50},lblur:{on:false,mode:'Normal',amt:8,dist:40,angle:0,inten:70,dir:'Both',q:16,size:60,soft:60,str:60,erase:false},filt:{on:false,bri:100,con:100,sat:100,hue:0,sep:0,gray:0},fill:{none:false},bg:{tol:30,feather:2,conn:true},curve:{on:false,style:'Arc',amt:40,freq:2,rot:false},warp:{on:false,type:'Bulge',amt:60,x:0,y:0,size:60},chrome:{on:false,pal:'Silver',color:'#ff7a3d',depth:14,bump:1,bands:2,contrast:1,shine:.6,angle:0},outline:{on:false,color:'#000000',width:8},grad:{on:false,c1:'#ff8a00',c2:'#e52e71',angle:90,base:''},shadow:{on:false,color:'#000000',blur:12,x:10,y:10},glow:{on:false,color:'#00e5ff',size:30,power:2},blur:{on:false,mode:'Normal',amt:4,dist:40,angle:0,inten:70,keep:0,dir:'Both',q:16},grain:{on:false,amt:50}};
 let W=1080,H=1080,EXP=1;
 const cv=new fabric.Canvas('c',{width:W,height:H,preserveObjectStacking:true,enableRetinaScaling:false,backgroundColor:'#1b1b2f'});
 Object.assign(fabric.Object.prototype,{cornerSize:52,touchCornerSize:72,transparentCorners:false,cornerColor:'#8b7bff',cornerStyle:'circle',borderColor:'#8b7bff',borderScaleFactor:3,padding:8});
@@ -144,7 +168,8 @@ function bb(s,d,w,h,r,hz){const n=hz?w:h,m=hz?h:w,sa=hz?1:w,sb=hz?w:1,k=1/(2*r+1
   for(let j=0;j<m;j++){const o=j*sb;let acc=0;for(let i=-r;i<=r;i++)acc+=s[o+Math.min(n-1,Math.max(0,i))*sa];
     for(let i=0;i<n;i++){d[o+i*sa]=acc*k;acc+=s[o+Math.min(n-1,i+r+1)*sa]-s[o+Math.max(0,i-r)*sa]}}}
 function blur(a,w,h,r,n){const t=new Float32Array(a.length);for(let p=0;p<n;p++){bb(a,t,w,h,r,true);bb(t,a,w,h,r,false)}}
-const chromeKey=o=>JSON.stringify([o.fx.chrome,o.fx.curve,o.fx.warp,EXP,o.text,o.fontFamily,o.fontSize,o.fontWeight,o.charSpacing,o.width,o.height,o.strokeWidth,o.stroke,o.type]);
+let EID=0;
+const chromeKey=o=>JSON.stringify([o.fx.chrome,o.fx.curve,o.fx.warp,EXP,o.text,o.fontFamily,o.fontSize,o.fontWeight,o.fontStyle,o.charSpacing,o.lineHeight,o.width,o.height,o.strokeWidth,o.stroke,o.rx,o.type,typeof o.fill==='string'?o.fill:0,o.fx.grad,o.fx.fill,o.fx.outline,o._element?(o._element.__i||(o._element.__i=++EID)):0]);
 function chromeBuild(o){
   const f=o.fx.chrome,nw=Math.max(o.width,o.height)+(o.strokeWidth||0),m=Math.min(EXP,480*EXP/nw),r=Math.max(1,Math.round(f.depth*m)),pad=Math.ceil(r*3.5)+2;
   o._noFx=true;const s=capture(o,m);o._noFx=false;
@@ -244,6 +269,32 @@ function lbFinal(o){const b=o._ch,L=o.fx.lblur;if(!L.on)return b;if(!o._lm)lmIni
   if(!o._lb||o._lb.k!==bk)o._lb=lbBlur(b,L,bk);
   const ck=bk+'|'+o._lmv;if(!o._lf||o._lf.k!==ck)o._lf=lbComp(o,b,o._lb,ck);return o._lf}
 
+/* corner pin: homography from the layer rectangle to a quad with four movable corners */
+function homog(s,d){const A=[],b=[];for(let i=0;i<4;i++){const x=s[i][0],y=s[i][1],u=d[i][0],v=d[i][1];A.push([x,y,1,0,0,0,-u*x,-u*y]);b.push(u);A.push([0,0,0,x,y,1,-v*x,-v*y]);b.push(v)}
+  for(let i=0;i<8;i++){let m=i;for(let r=i+1;r<8;r++)if(Math.abs(A[r][i])>Math.abs(A[m][i]))m=r;[A[i],A[m]]=[A[m],A[i]];[b[i],b[m]]=[b[m],b[i]];const p=A[i][i]||1e-9;for(let r=i+1;r<8;r++){const f=A[r][i]/p;for(let c=i;c<8;c++)A[r][c]-=f*A[i][c];b[r]-=f*b[i]}}
+  const h=new Array(8);for(let i=7;i>=0;i--){let t=b[i];for(let c=i+1;c<8;c++)t-=A[i][c]*h[c];h[i]=t/(A[i][i]||1e-9)}return h}
+function pinWarp(o,B){const P=o.fx.persp,w=B.c.width,h=B.c.height,sw=o.strokeWidth||0,Wc=(o.width+sw)*B.m,Hc=(o.height+sw)*B.m,pad=Math.round(.45*Math.max(w,h)),W=w+pad*2,H=h+pad*2,cx=W/2,cy=H/2,sg=[[-1,-1],[1,-1],[1,1],[-1,1]],pin=P.pin||[0,0,0,0,0,0,0,0];
+  const dq=sg.map((q,i)=>[cx+q[0]*Wc/2+pin[i*2]*Wc,cy+q[1]*Hc/2+pin[i*2+1]*Hc]),sq=sg.map(q=>[w/2+q[0]*Wc/2,h/2+q[1]*Hc/2]),M=homog(dq,sq),S=B.c.getContext('2d').getImageData(0,0,w,h).data,c=document.createElement('canvas');
+  c.width=W;c.height=H;const x=c.getContext('2d'),out=x.createImageData(W,H),D=out.data;
+  for(let y=0;y<H;y++)for(let u=0;u<W;u++){const d=M[6]*u+M[7]*y+1;if(Math.abs(d)<1e-9)continue;const qx=(M[0]*u+M[1]*y+M[2])/d,qy=(M[3]*u+M[4]*y+M[5])/d,x0=Math.floor(qx),y0=Math.floor(qy);if(x0<0||y0<0||x0>=w-1||y0>=h-1)continue;
+    const fx=qx-x0,fy=qy-y0,i=(y0*w+x0)*4,i2=i+w*4,a0=S[i+3]*(1-fx)*(1-fy),a1=S[i+7]*fx*(1-fy),a2=S[i2+3]*(1-fx)*fy,a3=S[i2+7]*fx*fy,Aa=a0+a1+a2+a3;
+    if(Aa>0){const j=(y*W+u)*4;D[j]=(S[i]*a0+S[i+4]*a1+S[i2]*a2+S[i2+4]*a3)/Aa;D[j+1]=(S[i+1]*a0+S[i+5]*a1+S[i2+1]*a2+S[i2+5]*a3)/Aa;D[j+2]=(S[i+2]*a0+S[i+6]*a1+S[i2+2]*a2+S[i2+6]*a3)/Aa;D[j+3]=Aa}}
+  x.putImageData(out,0,0);return{c,m:B.m}}
+
+/* 3D perspective: inverse-project the layer bitmap onto a rotated plane */
+let PQ=0;
+function pFinal(o,B){const P=o.fx.persp;if(!P.on)return B;const id=B.c.__p||(B.c.__p=++PQ),k=id+'|'+[P.mode,P.pin&&P.pin.join(','),P.rx,P.ry,P.rz,P.str].join('|');
+  if(o._pf&&o._pf.k===k)return o._pf.v;
+  if(P.mode==='Corner pin'){const v=pinWarp(o,B);o._pf={k,v};return v}
+  const w=B.c.width,h=B.c.height,pad=Math.round(.3*Math.max(w,h)),W=w+pad*2,H=h+pad*2,c=document.createElement('canvas');c.width=W;c.height=H;
+  const x=c.getContext('2d');x.drawImage(B.c,pad,pad);const S=x.getImageData(0,0,W,H).data,out=x.createImageData(W,H),D=out.data,rd=a=>a*Math.PI/180,ax=rd(P.rx),ay=rd(P.ry),az=rd(P.rz),cx=Math.cos(ax),sx=Math.sin(ax),cy=Math.cos(ay),sy=Math.sin(ay),cz=Math.cos(az),sz=Math.sin(az);
+  const R00=cz*cy,R01=cz*sy*sx-sz*cx,R02=cz*sy*cx+sz*sx,R10=sz*cy,R11=sz*sy*sx+cz*cx,R12=sz*sy*cx-cz*sx,R20=-sy,R21=cy*sx,R22=cy*cx,f=Math.max(w,h)*(6-5*P.str/100),hx=W/2,hy=H/2;
+  for(let y=0;y<H;y++)for(let u=0;u<W;u++){const X=u-hx,Y=y-hy,s=(R02*X+R12*Y)/f,den=s+R22;if(Math.abs(den)<1e-6)continue;const z=-s*f/den,k2=(f+z)/f;if(k2<=.05)continue;
+    const Px=X*k2,Py=Y*k2,qx=Px*R00+Py*R10+z*R20+hx,qy=Px*R01+Py*R11+z*R21+hy,x0=Math.floor(qx),y0=Math.floor(qy);if(x0<0||y0<0||x0>=W-1||y0>=H-1)continue;
+    const fx=qx-x0,fy=qy-y0,i=(y0*W+x0)*4,i2=i+W*4,a0=S[i+3]*(1-fx)*(1-fy),a1=S[i+7]*fx*(1-fy),a2=S[i2+3]*(1-fx)*fy,a3=S[i2+7]*fx*fy,Aa=a0+a1+a2+a3;
+    if(Aa>0){const j=(y*W+u)*4;D[j]=(S[i]*a0+S[i+4]*a1+S[i2]*a2+S[i2+4]*a3)/Aa;D[j+1]=(S[i+1]*a0+S[i+5]*a1+S[i2+1]*a2+S[i2+5]*a3)/Aa;D[j+2]=(S[i+2]*a0+S[i+6]*a1+S[i2+2]*a2+S[i2+6]*a3)/Aa;D[j+3]=Aa}}
+  x.putImageData(out,0,0);const v={c,m:B.m};o._pf={k,v};return v}
+
 /* per-object effects: glow, blur, grain are independent */
 function applyFx(o){
   if(!o.fx)o.fx={};for(const k in FX0)if(!o.fx[k])o.fx[k]=JSON.parse(JSON.stringify(FX0[k]));for(const k in FX0)for(const j in FX0[k])if(o.fx[k][j]===undefined)o.fx[k][j]=FX0[k][j];if(!o.isFilterLayer&&!o._fxd){o.hasControls=true;o.lockMovementX=o.lockMovementY=false}if(typeof o.fill==='string'&&!o.fx.grad.base)o.fx.grad.base=o.fill;if(o.isFilterLayer){if(!o._fxd){o._fxd=true;o.render=flRender}return}
@@ -251,10 +302,10 @@ function applyFx(o){
   const sup=Object.getPrototypeOf(o).render;
   o.render=function(ctx){
     const f=this.fx;
-    if(this._noFx||(!f.glow.on&&!f.blur.on&&!f.grain.on&&!f.shadow.on&&!f.chrome.on&&!f.curve.on&&!f.warp.on&&!f.filt.on&&!f.lblur.on))return sup.call(this,ctx);
+    if(this._noFx||(!f.glow.on&&!f.blur.on&&!f.grain.on&&!f.shadow.on&&!f.chrome.on&&!f.curve.on&&!f.warp.on&&!f.filt.on&&!f.lblur.on&&!f.persp.on))return sup.call(this,ctx);
     let base=c=>sup.call(this,c);
-    if(f.chrome.on||f.curve.on||f.warp.on||f.lblur.on){const k=chromeKey(this);if(!this._ch||this._ch.key!==k){this._ch=bmpBuild(this);this._ch.key=k;this._ch.id=++CHID}
-      base=c=>{if(!this.visible)return;c.save();this.transform(c);c.globalAlpha*=this.opacity;const B=lbFinal(this),q=1/B.m;c.scale(q,q);c.drawImage(B.c,-B.c.width/2,-B.c.height/2);c.restore()}}
+    if(f.chrome.on||f.curve.on||f.warp.on||f.lblur.on||f.persp.on){const k=chromeKey(this);if(!this._ch||this._ch.key!==k){this._ch=bmpBuild(this);this._ch.key=k;this._ch.id=++CHID}
+      base=c=>{if(!this.visible)return;c.save();this.transform(c);c.globalAlpha*=this.opacity;const B=pFinal(this,lbFinal(this)),q=1/B.m;c.scale(q,q);c.drawImage(B.c,-B.c.width/2,-B.c.height/2);c.restore()}}
     let src=base;
     if(f.grain.on){src=c=>{
       const t=c.getTransform();off.width=c.canvas.width;off.height=c.canvas.height;
@@ -305,7 +356,7 @@ $('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileR
 
 /* layers panel */
 function layers(){const L=$('#layers'),a=cv.getActiveObject(),os=cv.getObjects();
-  L.innerHTML=os.length?os.map((o,i)=>`<div class="row${o===a?' on':''}" data-i="${i}"><span class="nm" data-a="sel">${esc(o.type==='i-text'?o.text:(o.name||o.type))}</span><button data-a="vis">${o.visible?'◉':'◌'}</button><button data-a="lock">${o.selectable?'🔓':'🔒'}</button><button data-a="up">↑</button><button data-a="dn">↓</button><button data-a="del">✕</button></div>`).reverse().join(''):'<p class="mut">No layers yet. Add something from the Add tab.</p>'}
+  L.innerHTML=os.length?os.map((o,i)=>`<div class="row${o===a?' on':''}" data-i="${i}"><span class="gr" data-a="grip" title="Drag to reorder">⠿</span><span class="nm" data-a="sel">${esc(o.type==='i-text'?o.text:(o.name||o.type))}</span><button data-a="vis">${o.visible?'◉':'◌'}</button><button data-a="lock">${o.selectable?'🔓':'🔒'}</button><button data-a="up">↑</button><button data-a="dn">↓</button><button data-a="del">✕</button></div>`).reverse().join(''):'<p class="mut">No layers yet. Add something from the Add tab.</p>'}
 $('#layers').onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;const o=cv.item(+b.closest('.row').dataset.i),a=b.dataset.a;
   if(a==='sel'&&o.selectable)cv.setActiveObject(o);
   if(a==='vis'){o.visible=!o.visible;if(!o.visible&&cv.getActiveObject()===o)cv.discardActiveObject()}
@@ -328,7 +379,7 @@ function style(){const o=cv.getActiveObject(),P=$('#style');
   +R('Opacity','o.opacity',o.opacity,0,1,.01)+`<label>Blend<select data-p="o.globalCompositeOperation">${BL.map(b=>`<option value="${b[0]}"${(o.globalCompositeOperation||'source-over')===b[0]?' selected':''}>${b[1]}</option>`).join('')}</select></label>`
   +T('filt','Filter',FUI(f.filt))+T('curve','Curve',SEL('fx.curve.style',['Arc','Peak','Wave','Zigzag','Funky','Flag','Bulge'],f.curve.style,'Style')+R('Amount','fx.curve.amt',f.curve.amt,-100,100)+R('Frequency','fx.curve.freq',f.curve.freq,1,8,.1)+(t?`<label>Rotate letters<input type="checkbox" data-p="fx.curve.rot" ${f.curve.rot?'checked':''}></label>`:''))+T('warp','Distort',SEL('fx.warp.type',['Bulge','Twirl','Ripple'],f.warp.type,'Type')+R('Strength','fx.warp.amt',f.warp.amt,-100,100)+R('Position X','fx.warp.x',f.warp.x,-100,100)+R('Position Y','fx.warp.y',f.warp.y,-100,100)+R('Size','fx.warp.size',f.warp.size,10,150))+T('chrome','Chrome liquid',`<label>Metal<select data-p="fx.chrome.pal">${Object.keys(PAL).map(x=>`<option${x===f.chrome.pal?' selected':''}>${x}</option>`).join('')}</select></label>`+C('Custom metal color','fx.chrome.color',f.chrome.color)+R('Depth','fx.chrome.depth',f.chrome.depth,2,40)+R('Bumpiness','fx.chrome.bump',f.chrome.bump,.2,3,.05)+R('Reflection bands','fx.chrome.bands',f.chrome.bands,1,6,.1)+R('Contrast','fx.chrome.contrast',f.chrome.contrast,.4,2,.05)+R('Shine','fx.chrome.shine',f.chrome.shine,0,1.5,.05)+R('Light angle','fx.chrome.angle',f.chrome.angle,-180,180))+T('outline','Outline',C('Color','fx.outline.color',f.outline.color)+R('Width','fx.outline.width',f.outline.width,1,60))+(o.type!=='image'?T('grad','Gradient fill',GP+C('From','fx.grad.c1',f.grad.c1)+C('To','fx.grad.c2',f.grad.c2)+R('Angle','fx.grad.angle',f.grad.angle,0,360)):'')+T('shadow','Drop shadow',C('Color','fx.shadow.color',f.shadow.color)+R('Blur','fx.shadow.blur',f.shadow.blur,0,80)+R('Offset X','fx.shadow.x',f.shadow.x,-100,100)+R('Offset Y','fx.shadow.y',f.shadow.y,-100,100))+T('glow','Glow',C('Color','fx.glow.color',f.glow.color)+R('Size','fx.glow.size',f.glow.size,1,120)+R('Intensity','fx.glow.power',f.glow.power,1,6))
   +T('blur','Blur',SEL('fx.blur.mode',['Normal','Motion'],f.blur.mode,'Type')+(f.blur.mode==='Motion'?R('Distance','fx.blur.dist',f.blur.dist,1,300)+R('Angle','fx.blur.angle',f.blur.angle,0,360)+R('Intensity','fx.blur.inten',f.blur.inten,0,100)+SEL('fx.blur.dir',['Both','One way'],f.blur.dir,'Direction')+R('Keep sharp','fx.blur.keep',f.blur.keep,0,100)+R('Smoothness','fx.blur.q',f.blur.q,4,40):R('Amount','fx.blur.amt',f.blur.amt,0,40)))
-  +T('lblur','Local blur',SEL('fx.lblur.mode',['Normal','Motion'],f.lblur.mode,'Type')+(f.lblur.mode==='Motion'?R('Distance','fx.lblur.dist',f.lblur.dist,1,300)+R('Angle','fx.lblur.angle',f.lblur.angle,0,360)+R('Intensity','fx.lblur.inten',f.lblur.inten,0,100)+SEL('fx.lblur.dir',['Both','One way'],f.lblur.dir,'Direction')+R('Smoothness','fx.lblur.q',f.lblur.q,4,40):R('Amount','fx.lblur.amt',f.lblur.amt,1,40))+`<div class="grid" style="margin:8px 0"><button data-lb="paint" class="${PAINT===o?'pri':''}">${PAINT===o?'✔ Done':'🖌 Paint blur'}</button><button data-lb="clear">Clear</button></div>`+(PAINT===o?R('Brush size','fx.lblur.size',f.lblur.size,5,200)+R('Softness','fx.lblur.soft',f.lblur.soft,0,100)+R('Strength','fx.lblur.str',f.lblur.str,5,100)+`<label>Erase<input type="checkbox" data-p="fx.lblur.erase" ${f.lblur.erase?'checked':''}></label>`:''))+T('grain','Grain',R('Amount','fx.grain.amt',f.grain.amt,0,100))}
+  +T('persp','3D perspective',SEL('fx.persp.mode',['Tilt','Corner pin'],f.persp.mode,'Mode')+(f.persp.mode==='Corner pin'?`<p class="mut">Drag the four orange handles on the canvas to pin each corner.</p><button data-pin="reset" style="width:100%;margin-bottom:6px">Reset corners</button>`:PPUI+R('Tilt X','fx.persp.rx',f.persp.rx,-80,80)+R('Tilt Y','fx.persp.ry',f.persp.ry,-80,80)+R('Roll','fx.persp.rz',f.persp.rz,-180,180)+R('Perspective','fx.persp.str',f.persp.str,0,100)))+T('lblur','Local blur',SEL('fx.lblur.mode',['Normal','Motion'],f.lblur.mode,'Type')+(f.lblur.mode==='Motion'?R('Distance','fx.lblur.dist',f.lblur.dist,1,300)+R('Angle','fx.lblur.angle',f.lblur.angle,0,360)+R('Intensity','fx.lblur.inten',f.lblur.inten,0,100)+SEL('fx.lblur.dir',['Both','One way'],f.lblur.dir,'Direction')+R('Smoothness','fx.lblur.q',f.lblur.q,4,40):R('Amount','fx.lblur.amt',f.lblur.amt,1,40))+`<div class="grid" style="margin:8px 0"><button data-lb="paint" class="${PAINT===o?'pri':''}">${PAINT===o?'✔ Done':'🖌 Paint blur'}</button><button data-lb="clear">Clear</button></div>`+(PAINT===o?R('Brush size','fx.lblur.size',f.lblur.size,5,200)+R('Softness','fx.lblur.soft',f.lblur.soft,0,100)+R('Strength','fx.lblur.str',f.lblur.str,5,100)+`<label>Erase<input type="checkbox" data-p="fx.lblur.erase" ${f.lblur.erase?'checked':''}></label>`:''))+T('grain','Grain',R('Amount','fx.grain.amt',f.grain.amt,0,100))}
 $('#style').addEventListener('input',e=>{const t=e.target,p=t.dataset.p,o=cv.getActiveObject();if(!p||!o)return;
   const v=t.type==='checkbox'?t.checked:t.type==='range'?+t.value:t.value,a=p.split('.');
   if(a[0]==='fx')o.fx[a[1]][a[2]]=v;
@@ -521,11 +572,11 @@ $('#style').addEventListener('click',e=>{const b=e.target.closest('[data-fp]'),o
   const[bri,con,sat,hue,sep,gray]=FPR[b.dataset.fp];Object.assign(o.fx.filt,{on:true,bri,con,sat,hue,sep,gray});o.dirty=true;cv.requestRenderAll();snap();style()});
 
 /* cleaner panel: value readouts on every slider; effect controls stay hidden until the effect is switched on */
-const UN={'o.opacity':'%','fx.filt.bri':'%','fx.filt.con':'%','fx.filt.sat':'%','fx.filt.sep':'%','fx.filt.gray':'%','fx.filt.hue':'°','fx.grain.amt':'%','fx.blur.amt':'px','fx.glow.size':'px','fx.shadow.blur':'px','fx.shadow.x':'px','fx.shadow.y':'px','fx.outline.width':'px','o.fontSize':'px','o.rx':'px','fx.chrome.angle':'°','fx.grad.angle':'°','fx.warp.amt':'%','fx.warp.x':'%','fx.warp.y':'%','fx.warp.size':'%','fx.curve.amt':'%','fx.bg.tol':'%','fx.bg.feather':'px','fx.blur.dist':'px','fx.blur.angle':'°','fx.blur.inten':'%','fx.blur.keep':'%','fx.lblur.amt':'px','fx.lblur.dist':'px','fx.lblur.angle':'°','fx.lblur.inten':'%','fx.lblur.size':'px','fx.lblur.soft':'%','fx.lblur.str':'%'};
+const UN={'o.opacity':'%','fx.filt.bri':'%','fx.filt.con':'%','fx.filt.sat':'%','fx.filt.sep':'%','fx.filt.gray':'%','fx.filt.hue':'°','fx.grain.amt':'%','fx.blur.amt':'px','fx.glow.size':'px','fx.shadow.blur':'px','fx.shadow.x':'px','fx.shadow.y':'px','fx.outline.width':'px','o.fontSize':'px','o.rx':'px','fx.chrome.angle':'°','fx.grad.angle':'°','fx.warp.amt':'%','fx.warp.x':'%','fx.warp.y':'%','fx.warp.size':'%','fx.curve.amt':'%','fx.bg.tol':'%','fx.bg.feather':'px','fx.blur.dist':'px','fx.blur.angle':'°','fx.blur.inten':'%','fx.blur.keep':'%','fx.lblur.amt':'px','fx.lblur.dist':'px','fx.lblur.angle':'°','fx.lblur.inten':'%','fx.lblur.size':'px','fx.lblur.soft':'%','fx.lblur.str':'%','fx.persp.rx':'°','fx.persp.ry':'°','fx.persp.rz':'°','fx.persp.str':'%'};
 const fv=i=>{const p=i.dataset.p,v=+i.value;return(p==='o.opacity'?Math.round(v*100):Math.round(v*100)/100)+(UN[p]||'')};
 function deco(){document.querySelectorAll('#style input[type=range]').forEach(i=>{if(i.nextElementSibling&&i.nextElementSibling.className==='rv')return;const s=document.createElement('output');s.className='rv';s.textContent=fv(i);i.after(s)})}
 $('#style').addEventListener('input',e=>{const i=e.target;if(i.type==='range'&&i.nextElementSibling&&i.nextElementSibling.className==='rv')i.nextElementSibling.textContent=fv(i)});
-$('#style').addEventListener('change',e=>{const p=e.target.dataset.p;if(p==='fx.lblur.on')stopPaint();if(p&&(/^fx\.\w+\.on$/.test(p)||p==='fx.blur.mode'||p==='fx.lblur.mode'))style()});
+$('#style').addEventListener('change',e=>{const p=e.target.dataset.p;if(p==='fx.lblur.on')stopPaint();if(p&&(/^fx\.\w+\.on$/.test(p)||p==='fx.blur.mode'||p==='fx.lblur.mode'||p==='fx.persp.mode'))style()});
 {const s0=style;style=function(){s0();deco()}}
 
 /* projects: saved in the browser (IndexedDB) and autosaved after every change */
@@ -574,6 +625,70 @@ cv.on('mouse:up',()=>{if(!PAINT||!pl)return;pl=null;PAINT.lmask=PAINT._lm.toData
 $('#style').addEventListener('click',e=>{const b=e.target.closest('[data-lb]'),o=cv.getActiveObject();if(!b||!o||!o.fx)return;
   if(b.dataset.lb==='paint'){if(PAINT===o)stopPaint();else{stopPaint();PAINT=o;o.lockMovementX=o.lockMovementY=true;o.hasControls=false;cv.selection=false;cv._shouldClearSelection=()=>false;if(!o._lm)lmInit(o)}cv.requestRenderAll();style()}
   if(b.dataset.lb==='clear'){if(!o._lm)lmInit(o);o._lm.getContext('2d').clearRect(0,0,512,512);o._lmv++;o.lmask='';cv.requestRenderAll();snap()}});
+
+/* Canva-style UI: contextual bottom toolbar, one-tool sheet, layers drawer */
+const TL={text:['Aa','Text'],fill:['◉','Color'],grad:['◐','Gradient'],outline:['▢','Outline'],shadow:['◧','Shadow'],glow:['✦','Glow'],blur:['≋','Blur'],lblur:['🖌','Brush blur'],curve:['⌒','Curve'],chrome:['✺','Chrome'],warp:['⌬','Distort'],persp:['⬚','3D'],grain:['░','Grain'],filt:['◑','Filter'],blend:['◍','Opacity'],pos:['⇱','Position'],removebg:['✂','Remove BG'],adjust:['◑','Adjust'],canvas:['▦','Canvas']};
+const EFX=['grad','outline','shadow','glow','blur','lblur','curve','chrome','warp','persp','grain','filt'];
+const SET={text:['text','fill','grad','outline','shadow','glow','blur','lblur','curve','chrome','warp','persp','grain','filt','blend','pos'],rect:['fill','grad','outline','shadow','glow','blur','lblur','warp','persp','grain','filt','blend','pos'],image:['removebg','filt','outline','shadow','glow','blur','lblur','warp','persp','grain','blend','pos'],layer:['adjust']};
+const ADD=[['text','Aa','Text'],['neon','✦','Neon'],['rect','▭','Shape'],['circle','○','Circle'],['img','🖼','Image'],['filter','◐','Filter layer']];
+let TOOL=null,SIGO=null;
+const kind=o=>o.isFilterLayer?'layer':o.type==='i-text'?'text':o.type==='image'?'image':'rect';
+function toolOf(el){if(el.matches('.al'))return'pos';
+  if(el.tagName==='FIELDSET'){const lg=el.querySelector('legend input[data-p]');if(lg)return lg.dataset.p.split('.')[1];return/Remove background/.test(el.textContent.slice(0,24))?'removebg':'misc'}
+  const i=el.matches('[data-p]')?el:el.querySelector('[data-p]');if(!i)return'note';const p=i.dataset.p;
+  if(p==='o.opacity'||p==='o.globalCompositeOperation')return'blend';
+  if(p==='o.fill'||p==='fx.fill.none'||p==='o.rx')return'fill';return'text'}
+function bar(){const o=cv.getActiveObject(),B=$('#tbar'),sl=B.scrollLeft;let h;
+  if(!o||!o.fx)h=ADD.map(a=>`<button class="chip" data-add2="${a[0]}"><i>${a[1]}</i>${a[2]}</button>`).join('')+`<button class="chip${TOOL==='canvas'?' on':''}" data-tool="canvas"><i>▦</i>Canvas</button>`;
+  else h=`<button class="chip" data-act="dup"><i>⧉</i>Duplicate</button><button class="chip" data-act="del"><i>🗑</i>Delete</button>`+SET[kind(o)].map(k=>`<button class="chip${TOOL===k?' on':''}" data-tool="${k}"><i>${TL[k][0]}</i>${TL[k][1]}</button>`).join('');
+  B.innerHTML=h;B.scrollLeft=sl}
+function closeSheet(){TOOL=null;$('#tsheet').classList.remove('on');bar()}
+function openTool(k){TOOL=k;$('#stt').textContent=TL[k][1];$('#tsheet').classList.add('on');$('#canvas').style.display=k==='canvas'?'block':'none';$('#style').style.display=k==='canvas'?'none':'block';style();bar()}
+function groupTools(){const o=cv.getActiveObject();
+  if(SIGO!==o){SIGO=o;const ok=TOOL&&o&&o.fx&&SET[kind(o)].includes(TOOL);if(TOOL&&!ok&&!(TOOL==='canvas'&&!o))closeSheet();else bar()}
+  [...$('#style').children].forEach(el=>{el.style.display=(!o||TOOL==='adjust'||toolOf(el)===TOOL)?'':'none'})}
+{const s1=style;style=function(){s1();groupTools()}}
+tab=function(n){if(n==='add'){TOOL=null;$('#tsheet').classList.remove('on');SIGO=undefined;bar()}};
+$('#drawer').appendChild($('#layers'));$('#tbody').append($('#style'),$('#canvas'));
+$('#tbar').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const o=cv.getActiveObject();
+  if(b.dataset.add2){const t=document.querySelector('#add [data-add="'+b.dataset.add2+'"]');if(t&&b.dataset.add2!=='canvas')t.click();return}
+  if(b.dataset.act==='del'&&o){cv.remove(o);cv.discardActiveObject();cv.requestRenderAll();closeSheet();return}
+  if(b.dataset.act==='dup'&&o){o.clone(c=>{c.fx=JSON.parse(JSON.stringify(o.fx));c.set({left:o.left+30,top:o.top+30});cv.add(c);cv.setActiveObject(c);cv.requestRenderAll()},PROPS);return}
+  const k=b.dataset.tool;if(!k)return;if(TOOL===k){closeSheet();return}
+  if(o&&o.fx&&EFX.includes(k)&&!o.fx[k].on){o.fx[k].on=true;o.dirty=true;cv.requestRenderAll();snap()}
+  openTool(k)});
+$('#stx').onclick=closeSheet;
+function drawerTop(){$('#drawer').style.top=$('header').getBoundingClientRect().bottom+'px'}
+drawerTop();addEventListener('resize',drawerTop);
+$('#lyb').onclick=()=>{drawerTop();$('#drawer').classList.toggle('on');document.body.classList.toggle('dr',$('#drawer').classList.contains('on'));layers()};
+$('#dx').onclick=()=>{$('#drawer').classList.remove('on');document.body.classList.remove('dr')};
+let drag=null;
+$('#layers').addEventListener('pointerdown',e=>{const g=e.target.closest('[data-a="grip"]');if(!g)return;const row=g.closest('.row');drag={i:+row.dataset.i,row,to:null};row.classList.add('drag');g.setPointerCapture(e.pointerId);e.preventDefault()});
+$('#layers').addEventListener('pointermove',e=>{if(!drag)return;const t=document.elementFromPoint(e.clientX,e.clientY),r=t&&t.closest('#layers .row');document.querySelectorAll('#layers .row').forEach(x=>x.classList.remove('over'));if(r&&r!==drag.row){r.classList.add('over');drag.to=+r.dataset.i}else drag.to=null});
+$('#layers').addEventListener('pointerup',()=>{if(!drag)return;const d=drag;drag=null;d.row.classList.remove('drag');document.querySelectorAll('#layers .row').forEach(x=>x.classList.remove('over'));if(d.to!==null&&d.to!==d.i){cv.moveTo(cv.item(d.i),d.to);cv.requestRenderAll();snap();refresh()}});
+bar();
+
+/* 3D: presets and draggable corner handles */
+const PPR=[['Flat',0,0,0],['Left',0,-40,0],['Right',0,40,0],['Back',-40,0,0],['Top',40,0,0],['Tilt',20,-25,-6],['Lean',-25,30,4],['Poster',55,0,0]];
+const PPUI='<div class="gp" style="grid-template-columns:repeat(4,1fr)">'+PPR.map(p=>`<button data-pp="${p[1]},${p[2]},${p[3]}" style="height:auto;padding:7px 2px">${p[0]}</button>`).join('')+'</div>';
+$('#style').addEventListener('click',e=>{const o=cv.getActiveObject();if(!o||!o.fx)return;const b=e.target.closest('[data-pp]'),r=e.target.closest('[data-pin]');
+  if(b){const[rx,ry,rz]=b.dataset.pp.split(',').map(Number);Object.assign(o.fx.persp,{on:true,mode:'Tilt',rx,ry,rz});o.dirty=true;cv.requestRenderAll();snap();style()}
+  if(r){o.fx.persp.pin=[0,0,0,0,0,0,0,0];o.dirty=true;cv.requestRenderAll();snap()}});
+const SG=[[-1,-1],[1,-1],[1,1],[-1,1]],pinOn=o=>o&&o.fx&&o.fx.persp.on&&o.fx.persp.mode==='Corner pin';
+function pinPts(o){const P=o.fx.persp,sw=o.strokeWidth||0,W=o.width+sw,H=o.height+sw,pin=P.pin||[0,0,0,0,0,0,0,0],M=o.calcTransformMatrix();return{pts:SG.map((q,i)=>fabric.util.transformPoint(new fabric.Point(q[0]*W/2+pin[i*2]*W,q[1]*H/2+pin[i*2+1]*H),M))}}
+cv.on('after:render',()=>{const o=cv.getActiveObject();if(!pinOn(o))return;const{pts}=pinPts(o),k=cv.width/cv.upperCanvasEl.getBoundingClientRect().width,c=cv.contextTop;
+  c.save();c.strokeStyle='#ff9f0a';c.fillStyle='rgba(255,159,10,.35)';c.lineWidth=2*k;c.setLineDash([6*k,5*k]);c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.closePath();c.stroke();c.setLineDash([]);
+  pts.forEach(p=>{c.beginPath();c.arc(p.x,p.y,16*k,0,7);c.fill();c.stroke()});c.restore();cv.contextTopDirty=true});
+let pd=-1,pRaf=0;
+function pdown(e){const o=cv.getActiveObject();if(!pinOn(o)||(e.touches&&e.touches.length>1))return;const t=e.touches?e.touches[0]:e,r=cv.upperCanvasEl.getBoundingClientRect(),k=cv.width/r.width,px=(t.clientX-r.left)*k,py=(t.clientY-r.top)*cv.height/r.height,{pts}=pinPts(o);
+  let best=-1,bd=40*k;pts.forEach((p,i)=>{const d=Math.hypot(px-p.x,py-p.y);if(d<bd){bd=d;best=i}});if(best<0)return;pd=best;e.preventDefault();e.stopImmediatePropagation()}
+function pmove(e){if(pd<0)return;const o=cv.getActiveObject();if(!pinOn(o)){pd=-1;return}const t=e.touches?e.touches[0]:e,r=cv.upperCanvasEl.getBoundingClientRect(),sw=o.strokeWidth||0,W=o.width+sw,H=o.height+sw,
+  p=fabric.util.transformPoint(new fabric.Point((t.clientX-r.left)*cv.width/r.width,(t.clientY-r.top)*cv.height/r.height),fabric.util.invertTransform(o.calcTransformMatrix())),q=SG[pd],P=o.fx.persp,pin=(P.pin||[0,0,0,0,0,0,0,0]).slice(),cl=v=>Math.max(-.4,Math.min(.4,v));
+  pin[pd*2]=cl((p.x-q[0]*W/2)/W);pin[pd*2+1]=cl((p.y-q[1]*H/2)/H);P.pin=pin;o.dirty=true;if(!pRaf)pRaf=requestAnimationFrame(()=>{pRaf=0;cv.requestRenderAll()});e.preventDefault();e.stopPropagation()}
+function pup(){if(pd<0)return;pd=-1;snap()}
+['mousedown','touchstart'].forEach(n=>cv.upperCanvasEl.addEventListener(n,pdown,{capture:true,passive:false}));
+['mousemove','touchmove'].forEach(n=>document.addEventListener(n,pmove,{capture:true,passive:false}));
+['mouseup','touchend','touchcancel'].forEach(n=>document.addEventListener(n,pup,true));
 
 /* start */
 refresh();snap();
